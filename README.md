@@ -172,13 +172,6 @@ This project uses **synthetic data** and is intended for:
 
 ---
 
-## 👨‍💻 Author
-
-Your Name
-GitHub: https://github.com/your-username
-
----
-
 ## ⭐ Star This Repo
 
 If you like this project, give it a ⭐ — it helps a lot!
