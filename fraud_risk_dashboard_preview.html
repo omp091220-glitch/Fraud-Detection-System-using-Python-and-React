@@ -1,0 +1,275 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:transparent}
+#app{font-family:'IBM Plex Mono',monospace;background:#0a0d14;color:#c8d0e0;border-radius:12px;overflow:hidden;min-height:660px;padding-bottom:16px}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:48px;border-bottom:1px solid rgba(79,142,247,0.15);background:#0d1120}
+.logo{font-size:12px;font-weight:700;letter-spacing:.15em;color:#4f8ef7;text-transform:uppercase}
+.nav-r{display:flex;gap:16px;align-items:center;font-size:10px;color:#4a5878}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#39d98a;display:inline-block;margin-right:5px;animation:pulse 1.4s ease-in-out infinite}
+.live-txt{color:#39d98a;font-size:10px}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.main{padding:14px 18px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.grid21{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.card{background:rgba(16,22,38,.9);border:1px solid rgba(60,82,130,.22);border-radius:8px;padding:12px 14px}
+.metric-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#3a4a6a;margin-bottom:5px}
+.metric-val{font-size:22px;font-weight:700;line-height:1.1}
+.metric-sub{font-size:9px;color:#3a4a6a;margin-top:3px}
+.sec-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#3a4a6a;margin-bottom:10px;font-weight:600}
+/* Feed table */
+.feed-head{display:grid;grid-template-columns:1fr 72px 90px 72px 90px;gap:6px;font-size:8px;letter-spacing:.1em;color:#2a3a5a;text-transform:uppercase;border-bottom:1px solid rgba(60,82,130,.18);padding-bottom:7px;margin-bottom:6px}
+.feed-row{display:grid;grid-template-columns:1fr 72px 90px 72px 90px;gap:6px;font-size:10px;padding:6px 0;border-bottom:1px solid rgba(60,82,130,.07)}
+.feed-row.new{animation:fadeSlide .35s ease}
+.score-bar{display:flex;align-items:center;gap:5px}
+.score-track{width:52px;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.score-fill{height:100%;border-radius:2px;transition:width .3s}
+/* Badges */
+.badge{font-size:8px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border-radius:3px;display:inline-block}
+.badge-crit{background:rgba(220,38,38,.16);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.badge-high{background:rgba(234,88,12,.16);color:#f97316;border:1px solid rgba(249,115,22,.18)}
+.badge-med{background:rgba(202,138,4,.16);color:#eab308;border:1px solid rgba(234,179,8,.16)}
+.badge-low{background:rgba(22,163,74,.16);color:#22c55e;border:1px solid rgba(34,197,94,.16)}
+/* Decision */
+.dec-approve{color:#22c55e;font-size:10px;font-weight:700}
+.dec-review{color:#eab308;font-size:10px;font-weight:700}
+.dec-decline{color:#ef4444;font-size:10px;font-weight:700}
+/* Alerts */
+.alert-item{padding:8px 10px;margin-bottom:6px;border-radius:5px}
+.alert-crit{background:rgba(220,38,38,.08);border:1px solid rgba(239,68,68,.2)}
+.alert-high{background:rgba(234,88,12,.07);border:1px solid rgba(249,115,22,.18)}
+.alert-med{background:rgba(202,138,4,.06);border:1px solid rgba(234,179,8,.14)}
+.alert-id{font-size:10px;font-weight:600;color:#c8d0e0}
+.alert-sub{font-size:9px;color:#4a5878;margin-top:3px}
+/* Geo table */
+.geo-head{display:grid;grid-template-columns:90px 1fr 60px;gap:6px;font-size:8px;color:#2a3a5a;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid rgba(60,82,130,.15);padding-bottom:6px;margin-bottom:6px}
+.geo-row{display:grid;grid-template-columns:90px 1fr 60px;gap:6px;font-size:10px;padding:5px 0;border-bottom:1px solid rgba(60,82,130,.07);align-items:center}
+.geo-code{color:#3a4a6a;font-size:9px;margin-right:5px}
+/* Model grid */
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.model-cell{background:rgba(255,255,255,.02);border-radius:5px;padding:8px 10px}
+.model-cell-lbl{font-size:8px;color:#2a3a5a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.model-cell-val{font-size:14px;font-weight:700}
+/* Mini bar chart */
+canvas{display:block}
+</style>
+
+<div id="app">
+  <div class="navbar">
+    <div class="logo">⬡ FraudGuard Enterprise</div>
+    <div class="nav-r">
+      <span class="live-txt"><span class="live-dot"></span>Demo Mode</span>
+      <span>RF+IsoForest · v2.0</span>
+      <span id="clock" style="color:#2a3a5a">00:00:00</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Metrics -->
+    <div class="grid4">
+      <div class="card">
+        <div class="metric-lbl">Transactions Today</div>
+        <div class="metric-val" id="m-total" style="color:#4f8ef7">0</div>
+        <div class="metric-sub">+1 every ~1.4s</div>
+      </div>
+      <div class="card">
+        <div class="metric-lbl">Fraud Rate</div>
+        <div class="metric-val" id="m-rate" style="color:#eab308">0.00%</div>
+        <div class="metric-sub" id="m-flagged">0 flagged</div>
+      </div>
+      <div class="card">
+        <div class="metric-lbl">Amount at Risk</div>
+        <div class="metric-val" id="m-risk" style="color:#f97316">$0</div>
+        <div class="metric-sub">Pending review / declined</div>
+      </div>
+      <div class="card">
+        <div class="metric-lbl">Model Accuracy</div>
+        <div class="metric-val" style="color:#22c55e">97.41%</div>
+        <div class="metric-sub" id="m-lat">Avg latency: 8.2ms</div>
+      </div>
+    </div>
+
+    <!-- Feed + Alerts -->
+    <div class="grid21">
+      <div class="card" style="height:340px;overflow:hidden">
+        <div class="sec-lbl">▶ Live Transaction Stream</div>
+        <div class="feed-head"><span>TX ID</span><span>Amount</span><span>Score</span><span>Risk</span><span>Decision</span></div>
+        <div id="feed" style="overflow-y:auto;height:270px"></div>
+      </div>
+      <div class="card" style="height:340px;overflow:hidden">
+        <div class="sec-lbl">⚡ Active Alerts <span id="alert-count" style="background:rgba(239,68,68,.15);color:#ef4444;font-size:8px;padding:1px 5px;border-radius:3px;border:1px solid rgba(239,68,68,.28);margin-left:5px">0</span></div>
+        <div id="alerts" style="overflow-y:auto;height:290px"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-lbl">Transaction Volume (24h)</div>
+        <canvas id="volumeChart" height="160"></canvas>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">Hourly Avg Fraud Score</div>
+        <canvas id="scoreChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- Geo + Model -->
+    <div class="grid21">
+      <div class="card">
+        <div class="sec-lbl">Geographic Risk Matrix</div>
+        <div class="geo-head"><span>Country</span><span>Risk Score</span><span>Level</span></div>
+        <div id="geo-body"></div>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">Model Performance</div>
+        <div class="model-grid">
+          <div class="model-cell"><div class="model-cell-lbl">Accuracy</div><div class="model-cell-val" style="color:#22c55e">97.41%</div></div>
+          <div class="model-cell"><div class="model-cell-lbl">Avg Latency</div><div class="model-cell-val" id="pm-lat" style="color:#4f8ef7">8.2ms</div></div>
+          <div class="model-cell"><div class="model-cell-lbl">Total Scored</div><div class="model-cell-val" id="pm-total" style="color:#c8d0e0">0</div></div>
+          <div class="model-cell"><div class="model-cell-lbl">Ensemble</div><div class="model-cell-val" style="color:#a78bfa;font-size:10px">RF+IsoForest</div></div>
+          <div class="model-cell"><div class="model-cell-lbl">False Pos Rate</div><div class="model-cell-val" style="color:#eab308">1.80%</div></div>
+          <div class="model-cell"><div class="model-cell-lbl">AUC-ROC</div><div class="model-cell-val" style="color:#22c55e">0.9741</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CATS=['grocery','electronics','fuel','dining','travel','online_retail','atm','healthcare','entertainment','jewelry'];
+const COUNTRIES=[
+  {code:'RU',name:'Russia',risk:.82},{code:'NG',name:'Nigeria',risk:.78},{code:'UA',name:'Ukraine',risk:.71},
+  {code:'BR',name:'Brazil',risk:.55},{code:'MX',name:'Mexico',risk:.44},{code:'CN',name:'China',risk:.41},
+  {code:'IN',name:'India',risk:.19},{code:'US',name:'United States',risk:.12},{code:'GB',name:'United Kingdom',risk:.09},{code:'DE',name:'Germany',risk:.08}
+];
+let txCount=1,totalTx=0,fraudTx=0,riskAmt=0,latency=8.2,alertsArr=[];
+
+function rnd(a,b){return Math.random()*(b-a)+a}
+function makeTx(){
+  const fraud=Math.random()<0.065;
+  const id='TXN-'+String(txCount++).padStart(6,'0');
+  const amount=fraud?parseFloat(rnd(600,8999).toFixed(2)):parseFloat(rnd(5,420).toFixed(2));
+  const score=fraud?parseFloat(rnd(0.64,.97).toFixed(3)):parseFloat(rnd(.01,.27).toFixed(3));
+  const risk=score>=.85?'critical':score>=.65?'high':score>=.4?'medium':'low';
+  const decision=risk==='critical'?'decline':risk==='high'?'review':'approve';
+  const lat=parseFloat(rnd(1.2,16).toFixed(1));
+  return{id,amount,merchant:CATS[Math.floor(rnd(0,CATS.length))],score,risk,decision,lat};
+}
+
+function scoreColor(s){return s>=.85?'#ef4444':s>=.65?'#f97316':s>=.4?'#eab308':'#22c55e'}
+function badge(level){const m={critical:['badge badge-crit','CRITICAL'],high:['badge badge-high','HIGH'],medium:['badge badge-med','MED'],low:['badge badge-low','LOW']};const[c,l]=m[level]||m.low;return`<span class="${c}">${l}</span>`}
+function dec(d){return`<span class="dec-${d}">${d==='approve'?'✓ APPROVE':d==='review'?'⚠ REVIEW':'✗ DECLINE'}</span>`}
+
+function addTx(){
+  const tx=makeTx();
+  totalTx++;
+  if(tx.risk!=='low'){fraudTx++;riskAmt+=tx.amount;}
+  latency=latency*.9+tx.lat*.1;
+  
+  const feed=document.getElementById('feed');
+  const row=document.createElement('div');
+  row.className='feed-row new';
+  const sc=scoreColor(tx.score);
+  row.innerHTML=`
+    <span style="color:#5a6a8a;font-size:9px">${tx.id}</span>
+    <span style="color:#c8d0e0">$${tx.amount.toLocaleString()}</span>
+    <span class="score-bar"><span class="score-track"><span class="score-fill" style="width:${tx.score*100}%;background:${sc}"></span></span><span style="font-size:9px;color:${sc}">${(tx.score*100).toFixed(1)}%</span></span>
+    ${badge(tx.risk)}
+    ${dec(tx.decision)}
+  `;
+  feed.insertBefore(row,feed.firstChild);
+  if(feed.children.length>40)feed.removeChild(feed.lastChild);
+  
+  if(tx.risk!=='low'){
+    alertsArr.unshift(tx);
+    if(alertsArr.length>20)alertsArr.pop();
+    renderAlerts();
+  }
+  
+  document.getElementById('m-total').textContent=totalTx.toLocaleString();
+  const rate=(fraudTx/totalTx*100).toFixed(2);
+  const rateEl=document.getElementById('m-rate');
+  rateEl.textContent=rate+'%';
+  rateEl.style.color=parseFloat(rate)>5?'#ef4444':'#eab308';
+  document.getElementById('m-flagged').textContent=fraudTx+' flagged';
+  document.getElementById('m-risk').textContent='$'+Math.round(riskAmt).toLocaleString();
+  document.getElementById('m-lat').textContent='Avg latency: '+latency.toFixed(1)+'ms';
+  document.getElementById('pm-lat').textContent=latency.toFixed(1)+'ms';
+  document.getElementById('pm-total').textContent=totalTx.toLocaleString();
+}
+
+function renderAlerts(){
+  const el=document.getElementById('alerts');
+  document.getElementById('alert-count').textContent=alertsArr.length;
+  el.innerHTML=alertsArr.slice(0,12).map(a=>`
+    <div class="alert-item alert-${a.risk==='medium'?'med':a.risk}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="alert-id">${a.id}</span>
+        ${badge(a.risk)}
+      </div>
+      <div class="alert-sub">$${a.amount.toLocaleString()} · ${a.merchant} · Score ${(a.score*100).toFixed(1)}%</div>
+    </div>`).join('');
+}
+
+// Geo table
+document.getElementById('geo-body').innerHTML=COUNTRIES.map(c=>{
+  const lvl=c.risk>=.65?'high':c.risk>=.4?'medium':'low';
+  const col=c.risk>=.65?'#ef4444':c.risk>=.4?'#eab308':'#22c55e';
+  return`<div class="geo-row">
+    <span><span class="geo-code">${c.code}</span>${c.name}</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span style="width:60px;height:3px;background:rgba(255,255,255,.05);border-radius:2px;display:inline-block;overflow:hidden">
+        <span style="display:block;width:${c.risk*100}%;height:100%;background:${col};border-radius:2px"></span>
+      </span>
+      <span style="font-size:9px;color:#4a5878">${(c.risk*100).toFixed(0)}%</span>
+    </span>
+    ${badge(lvl)}
+  </div>`;
+}).join('');
+
+// Charts
+function makeHours(){
+  const d=[];
+  for(let h=23;h>=0;h--){
+    const dt=new Date(Date.now()-h*3600000);
+    d.push({t:`${String(dt.getHours()).padStart(2,'0')}:00`,l:Math.floor(rnd(100,380)),f:Math.floor(rnd(2,20)),s:parseFloat(rnd(.07,.26).toFixed(3))});
+  }
+  return d;
+}
+const hd=makeHours();
+const labels=hd.map(x=>x.t);
+
+const volChart=new Chart(document.getElementById('volumeChart'),{
+  type:'line',
+  data:{labels,datasets:[
+    {label:'Legitimate',data:hd.map(x=>x.l),borderColor:'#4f8ef7',borderWidth:1.5,fill:true,backgroundColor:'rgba(79,142,247,.12)',tension:.4,pointRadius:0},
+    {label:'Fraud',data:hd.map(x=>x.f),borderColor:'#ef4444',borderWidth:1.5,fill:true,backgroundColor:'rgba(239,68,68,.12)',tension:.4,pointRadius:0}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#2a3a5a',font:{size:9},maxRotation:0},grid:{color:'rgba(60,82,130,.1)'},border:{display:false}},
+    y:{ticks:{color:'#2a3a5a',font:{size:9}},grid:{color:'rgba(60,82,130,.1)'},border:{display:false}}
+  }}
+});
+
+const scoreChart=new Chart(document.getElementById('scoreChart'),{
+  type:'bar',
+  data:{labels,datasets:[{label:'Avg Score',data:hd.map(x=>x.s),backgroundColor:'rgba(249,115,22,.7)',borderRadius:2,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#2a3a5a',font:{size:9},maxRotation:0},grid:{display:false},border:{display:false}},
+    y:{ticks:{color:'#2a3a5a',font:{size:9},callback:v=>(v*100).toFixed(0)+'%'},grid:{color:'rgba(60,82,130,.1)'},border:{display:false}}
+  }}
+});
+
+// Clock
+setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('en-US',{hour12:false})+' UTC'},1000);
+
+// Stream transactions
+setInterval(addTx,1400);
+// Seed initial
+for(let i=0;i<12;i++)addTx();
+</script>
